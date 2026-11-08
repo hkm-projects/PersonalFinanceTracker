@@ -30,46 +30,45 @@ namespace FinanceTrackerV2._1.DataAccess
 
                     CREATE TABLE IF NOT EXISTS Portfolios (
                     PortfolioID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Name TEXT NOT NULL
+                    Name TEXT NOT NULL UNIQUE
                     );
 
-                    CREATE TABLE IF NOT EXISTS BankAccounts (
-                    BankAccountID INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    CREATE TABLE IF NOT EXISTS Accounts (
+                    AccountID INTEGER PRIMARY KEY AUTOINCREMENT, 
                     PortfolioID INTEGER NOT NULL,
-                    AccountName TEXT NOT NULL, 
-                    Balance REAL NOT NULL, 
+                    Type TEXT NOT NULL, 
+                    AccountName TEXT NOT NULL UNIQUE,
                     FOREIGN KEY (PortfolioID)
                         REFERENCES Portfolios(PortfolioID)
                     );
 
-                    CREATE TABLE IF NOT EXISTS CreditAccounts (
-                    CreditAccountID INTEGER PRIMARY KEY AUTOINCREMENT, 
-                    PortfolioID INTEGER NOT NULL, 
-                    AccountName TEXT NOT NULL, 
-                    CreditLimit REAL NOT NULL, 
-                    FOREIGN KEY (PortfolioID) 
-                        REFERENCES Portfolios(PortfolioID)
+                    CREATE TABLE IF NOT EXISTS BankAccounts (
+                    AccountID INTEGER NOT NULL,                     
+                    Balance REAL NOT NULL,
+                    InterestRate REAL NOT NULL,
+                    FOREIGN KEY (AccountID)
+                        REFERENCES Accounts(AccountID)
+
                     );
 
-                    CREATE TABLE IF NOT EXISTS BankTransactions (
+                    CREATE TABLE IF NOT EXISTS CreditAccounts (
+                    AccountID INTEGER NOT NULL,                     
+                    CreditLimit REAL NOT NULL, 
+                    FOREIGN KEY (AccountID)
+                        REFERENCES Accounts(AccountID)
+                    );
+
+                    CREATE TABLE IF NOT EXISTS Transactions (
                     TransactionID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    BankAccountID INTEGER NOT NULL,
+                    AccountID INTEGER NOT NULL,
                     Amount REAL NOT NULL, 
                     Name TEXT NOT NULL, 
                     Category TEXT NOT NULL, 
-                    FOREIGN KEY (BankAccountID)
-                        REFERENCES BankAccounts (BankAccountID)
+                    FOREIGN KEY (AccountID)
+                        REFERENCES Accounts (AccountID)
                     );
 
-                    CREATE TABLE IF NOT EXISTS CreditTransactions (
-                    TransactionID INTEGER PRIMARY KEY AUTOINCREMENT, 
-                    CreditAccountID INTEGER NOT NULL,
-                    Amount REAL NOT NULL, 
-                    Name TEXT NOT NULL,
-                    Category TEXT NOT NULL, 
-                    FOREIGN KEY (CreditAccountID)
-                        REFERENCES CreditAccounts (CreditAccountID)
-                    );
+                    
 
 
 
