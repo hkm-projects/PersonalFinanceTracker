@@ -12,6 +12,9 @@ namespace FinanceTrackerV2._1.DataTypes
     public class Account
     {
         public string Name;
+        public int AccountID;
+        public int PortfolioID { get; set; }
+
 
 
         public List<Transaction> Transactions; // A list is used here to allow addition and removal of as many transactions as necessary

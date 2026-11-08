@@ -9,8 +9,17 @@ namespace FinanceTrackerV2._1.DataTypes
     public class Portfolio
     {
         public string Name;
+        public int PortfolioID { get; set; }
+
 
         List<Account> Accounts;
+
+        public Portfolio(int portfolioid, string name)
+        {
+            PortfolioID = portfolioid;
+            Name = name;
+            Accounts = new List<Account>();
+        }
 
         public Portfolio()
         {

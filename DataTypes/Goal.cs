@@ -21,6 +21,11 @@ namespace FinanceTrackerV2._1.DataTypes
             Description = description;
         }
 
+        public Goal()
+        {
+
+        }
+
         public string UpdateGoal()
         {
             string UpdatedGoal = "";

@@ -1,5 +1,6 @@
 using FinanceTrackerV2._1.DataAccess;
 using FinanceTrackerV2._1.DataTypes;
+using System.Data.Common;
 namespace FinanceTrackerV2._1
 {
     internal static class Program
@@ -58,8 +59,26 @@ namespace FinanceTrackerV2._1
             InitialiseDB create = new InitialiseDB();
             DatabaseManager test = new DatabaseManager();
             Goal g1 = new Goal(5, 500.26, "goalOne", "");
-            test.Add(g1);    
+            test.Add(g1);
+            Goal g2 = new Goal(0, 900.35, "goaltwo", "");
+            test.Add(g2);
+            Goal g3 = new Goal(0, 700.85, "goalthree", "");
+            test.Add(g3);
+
+            var result = test.RetrieveGoals();
+
+            Portfolio p1 = new Portfolio(0,"portfolio_one");
             
+
+
+            test.Add(p1);
+            int p_id = test.RetreivePortfolioID(p1.Name);
+
+            BankAccount bank1 = new BankAccount(0, p_id, "bankone", 5.33, 2000.75);
+            
+
+            test.Add(bank1);
+
 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
