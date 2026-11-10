@@ -25,7 +25,7 @@ namespace FinanceTrackerV2._1.DataAccess
                     GoalID INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name TEXT NOT NULL, 
                     Amount REAL NOT NULL,
-                    Description TEXT
+                    Description TEXT NOT NULL
                     );
 
                     CREATE TABLE IF NOT EXISTS Portfolios (

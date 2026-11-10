@@ -8,10 +8,13 @@ namespace FinanceTrackerV2._1.DataTypes
 {
     public class Goal
     {
-        public int GoalID { get; set; }
-        public double Amount { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public int GoalID;
+
+        public double Amount;
+
+        public string Name;
+
+        public string Description;
 
         public Goal (int goalID, double amount, string name, string description)
         {

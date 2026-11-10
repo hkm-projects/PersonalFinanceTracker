@@ -72,8 +72,8 @@ namespace FinanceTrackerV2._1
 
 
             test.Add(p1);
-            int p_id = test.RetreivePortfolioID(p1.Name);
-
+            int p_id = test.RetrievePortfolioID(p1.Name);
+            
             BankAccount bank1 = new BankAccount(0, p_id, "bankone", 5.33, 2000.75);
             
 
