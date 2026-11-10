@@ -12,8 +12,10 @@ namespace FinanceTrackerV2._1.DataTypes
     public class Account
     {
         public string Name;
+
         public int AccountID;
-        public int PortfolioID { get; set; }
+
+        public int PortfolioID; 
 
 
 

@@ -11,9 +11,9 @@ namespace FinanceTrackerV2._1.DataTypes
     /// </summary> 
     public class CreditAccount : Account
     {
-        public int PortfolioID { get; set; }
-        public int CreditAccountID { get; set; }
-        public double CreditLimit { get; set; }
+
+
+        public double CreditLimit;
 
         /// <summary>
         /// This overrides the retrieve balance method as defined in the Account class  
@@ -37,5 +37,8 @@ namespace FinanceTrackerV2._1.DataTypes
             PortfolioID = portfolioID;
             CreditLimit = creditLimit;
         }
-    }// CreditAccount C1 = new Credit
+
+        public CreditAccount()
+        { }
+    }
 }

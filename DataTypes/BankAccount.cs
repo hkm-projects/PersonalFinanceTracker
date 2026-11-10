@@ -8,9 +8,10 @@ namespace FinanceTrackerV2._1.DataTypes
 {
     public class BankAccount : Account
     {
-        
-        public double InterestRate { get; set; }
-        public double BankBalance { get; set; }
+
+        public double InterestRate;
+
+        public double BankBalance;
 
         public BankAccount(int accountID, int portfolioID, string name,  double interestRate, double bankBalance)
         {

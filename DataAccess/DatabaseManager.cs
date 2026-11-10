@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace FinanceTrackerV2._1.DataAccess
+namespace FinanceTrackerV2._1.DataAccess 
 {
     internal class DatabaseManager
     {
@@ -63,17 +63,10 @@ namespace FinanceTrackerV2._1.DataAccess
             insert.Parameters.AddWithValue("$pID", bankacc.PortfolioID);
             insert.Parameters.AddWithValue("$type", "BANK");
             insert.Parameters.AddWithValue("$accname", bankacc.Name);
+            
             insert.ExecuteNonQuery();
 
-            var idquery = DBConnection.CreateCommand();
-            idquery.CommandText = """
-                SELECT AccountID
-                FROM Accounts
-                WHERE AccountName = $accname;
-                """;
-            idquery.Parameters.AddWithValue("$accname", bankacc.Name);
-            int accountid = Convert.ToInt32(idquery.ExecuteScalar());
-
+            int accountid = RetrieveAccountID(bankacc.Name);
 
             var insert1 = DBConnection.CreateCommand();
             insert1.CommandText = """
@@ -94,15 +87,32 @@ namespace FinanceTrackerV2._1.DataAccess
 
             var insert = DBConnection.CreateCommand();
             insert.CommandText = """
-                INSERT INTO CreditAccounts(PortfolioID,AccountName,CreditLimit)
-                values($pID,$accname,$limit);
+                INSERT INTO Accounts(PortfolioID,Type,AccountName)
+                values($pID,$type,$accname);
 
                 """;
 
             insert.Parameters.AddWithValue("$pID", credacc.PortfolioID);
+            insert.Parameters.AddWithValue("$type", "CREDIT");
             insert.Parameters.AddWithValue("$accname", credacc.Name);
-            insert.Parameters.AddWithValue("$limit", credacc.CreditLimit);
+            
             insert.ExecuteNonQuery();
+
+            int accountid = RetrieveAccountID(credacc.Name);
+
+            var insert1 = DBConnection.CreateCommand();
+            insert1.CommandText = """
+                INSERT INTO CreditAccounts (AccountID, CreditLimit)
+                VALUES($accid, $limit);
+
+                """;
+
+            insert1.Parameters.AddWithValue("$accid", accountid);
+            insert1.Parameters.AddWithValue("$limit", credacc.CreditLimit);
+
+            insert1.ExecuteNonQuery();
+
+
         }
 
         
@@ -124,11 +134,12 @@ namespace FinanceTrackerV2._1.DataAccess
             List<Goal> result = new List<Goal>();
             while (reader.Read())
             {
-                Goal g = new Goal();
-                g.GoalID = reader.GetInt32(0);
-                g.Amount = reader.GetDouble(1);
-                g.Name = reader.GetString(2);
-                g.Description = reader.GetString(3);
+                Goal g = new Goal(
+                    reader.GetInt32(0),
+                    reader.GetDouble(1),
+                    reader.GetString(2),
+                    reader.GetString(3)
+                );
 
                 result.Add(g);
 
@@ -137,7 +148,7 @@ namespace FinanceTrackerV2._1.DataAccess
             return result;
         }
 
-        public int RetreivePortfolioID(string name)
+        public int RetrievePortfolioID(string name)
         {
             using var DBConnection = new SqliteConnection(connectionstring);
             DBConnection.Open();
@@ -154,7 +165,85 @@ namespace FinanceTrackerV2._1.DataAccess
             return p_id;
         }
 
+        public int RetrieveAccountID(string acc_name)
+        {
+            using var DBConnection = new SqliteConnection(connectionstring);
+            DBConnection.Open();
+            var idquery = DBConnection.CreateCommand();
+            idquery.CommandText = """
+                SELECT AccountID
+                FROM Accounts
+                WHERE AccountName = $accname;
+                """;
+            idquery.Parameters.AddWithValue("$accname", acc_name);            
+            int acc_id = Convert.ToInt32(idquery.ExecuteScalar());
+            return acc_id;
 
+        }
+
+        public List<Portfolio> RetrievePortfolios()
+        {
+            using var DBConnection = new SqliteConnection(connectionstring);
+            DBConnection.Open();
+
+            var retrieve = DBConnection.CreateCommand();
+            retrieve.CommandText = """
+                SELECT PortfolioID,
+                FROM Portfolios;
+
+
+                """;
+
+            using var reader = retrieve.ExecuteReader();
+            List<Portfolio> result = new List<Portfolio>();
+            while (reader.Read())
+            {
+                Portfolio p = new Portfolio(
+                    reader.GetInt32(0), 
+                    reader.GetString(1)
+                );
+
+                result.Add(p);
+            }
+
+            return result;
+
+        }
+
+
+        public List<Account> RetrieveAccounts(int portfolioID)
+        {
+
+            using var DBConnection = new SqliteConnection(connectionstring);
+            DBConnection.Open();
+
+            var retrieve = DBConnection.CreateCommand();
+
+            retrieve.CommandText = """
+                SELECT AccountID, PortfolioID, Type, AccountName
+                FROM Accounts
+                Where PortfolioID = $pid;
+
+                """;
+
+            retrieve.Parameters.AddWithValue("$pid", portfolioID);
+
+            using var reader = retrieve.ExecuteReader();
+            List<Account> result = new List<Account>();
+
+            while (reader.Read())
+            {
+                Account a = new Account();
+                a.AccountID = reader.GetInt32(0);
+                a.PortfolioID = reader.GetInt32(1);
+                a.Name = reader.GetString(2);
+
+                result.Add(a);
+            }
+
+            return result;
+
+        }
 
     }
 }

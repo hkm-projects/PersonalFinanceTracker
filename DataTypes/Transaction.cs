@@ -8,9 +8,12 @@ namespace FinanceTrackerV2._1.DataTypes
 {
     public class Transaction
     {
-        public double Amount { get; set; }
-        public string Name { get; set; }
-        public int TransactionID { get; set; }
-        public string Category { get; set; }
+        public double Amount;
+
+        public string Name;
+        
+        public int TransactionID;
+        
+        public string Category;
     }
 }
