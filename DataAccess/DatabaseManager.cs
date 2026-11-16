@@ -115,7 +115,28 @@ namespace FinanceTrackerV2._1.DataAccess
 
         }
 
-        
+        public void Add(Transaction t)
+        {
+            using var DBConnection = new SqliteConnection(connectionstring);
+            DBConnection.Open();
+
+            var insert = DBConnection.CreateCommand();
+            insert.CommandText = """
+                INSERT INTO Transactions(AccountID,Amount,Name,Category)
+                values($aID,$amt,$name,$cat);
+
+                """;
+
+            insert.Parameters.AddWithValue("$aID", t.AccountID);
+            insert.Parameters.AddWithValue("$amt", t.Amount);
+            insert.Parameters.AddWithValue("$name", t.Name);
+            insert.Parameters.AddWithValue("$cat", t.Category);
+
+            insert.ExecuteNonQuery();
+
+        }
+
+
 
         public List<Goal> RetrieveGoals()
         {
@@ -181,17 +202,24 @@ namespace FinanceTrackerV2._1.DataAccess
 
         }
 
-        public List<Portfolio> RetrievePortfolios()
+       /* public List<Portfolio> RetrievePortfolios()
         {
             using var DBConnection = new SqliteConnection(connectionstring);
             DBConnection.Open();
 
             var retrieve = DBConnection.CreateCommand();
             retrieve.CommandText = """
-                SELECT PortfolioID,
-                FROM Portfolios;
-
-
+                SELECT 
+                p.PortfolioID,p.Name,
+                a.AccountID,a.Type,a.AccountName,
+                b.InterestRate, b.Balance,
+                c.CreditLimit,
+                t.TransactionID,t.Amount,t.Name,t.Category
+                FROM Portfolios p 
+                JOIN Accounts a on p.PortfolioID = a.PortfolioID 
+                LEFT JOIN BankAccounts b on a.AccountID = b.AccountID
+                LEFT JOIN CreditAccounts c on a.AccountID = c.AccountID
+                LEFT JOIN Transactions t on a.AccountID = t.AccountID;
                 """;
 
             using var reader = retrieve.ExecuteReader();
@@ -203,12 +231,39 @@ namespace FinanceTrackerV2._1.DataAccess
                     reader.GetString(1)
                 );
 
-                result.Add(p);
+                int accountid = reader.GetInt32(2);
+                string acc_type = reader.GetString(3);
+                string acc_name = reader.GetString(4);
+                
+                if(acc_type == "BANK")
+                {
+                    BankAccount b = new BankAccount(
+                        accountid,
+                        p.PortfolioID,
+                        acc_name,
+                        reader.GetDouble(5),
+                        reader.GetDouble(6)
+                        );
+                }    
+
+
+                foreach (Portfolio p1 in result)
+                {
+                    if (p1.PortfolioID == p.PortfolioID)
+                    {
+                        break;
+                    }
+
+                    result.Add(p);
+                }
+
+
+                
             }
 
             return result;
 
-        }
+        } */
 
 
         public List<Account> RetrieveAccounts(int portfolioID)
