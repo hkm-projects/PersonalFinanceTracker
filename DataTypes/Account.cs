@@ -30,6 +30,8 @@ namespace FinanceTrackerV2._1.DataTypes
             Transactions = new List<Transaction>();
         }
 
+         
+
         /// <summary>
         /// This method is used to add a transaction to the list of transactions
         /// </summary>
