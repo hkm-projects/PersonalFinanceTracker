@@ -202,7 +202,7 @@ namespace FinanceTrackerV2._1.DataAccess
 
         }
 
-       /* public List<Portfolio> RetrievePortfolios()
+       public List<Portfolio> RetrievePortfolios()
         {
             using var DBConnection = new SqliteConnection(connectionstring);
             DBConnection.Open();
@@ -211,30 +211,59 @@ namespace FinanceTrackerV2._1.DataAccess
             retrieve.CommandText = """
                 SELECT 
                 p.PortfolioID,p.Name,
-                a.AccountID,a.Type,a.AccountName,
-                b.InterestRate, b.Balance,
-                c.CreditLimit,
-                t.TransactionID,t.Amount,t.Name,t.Category
+                IFNULL (a.AccountID, -1),
+                IFNULL( a.Type, ''),
+                IFNULL(a.AccountName,''),
+                IFNULL(b.InterestRate, 0),
+                IFNULL(b.Balance,0 ),
+                IFNULL(c.CreditLimit,0),
+                IFNULL(t.TransactionID,-1),
+                IFNULL(t.Amount, 0),
+                IFNULL(t.Name,''),
+                IFNULL(t.Category,'')
                 FROM Portfolios p 
-                JOIN Accounts a on p.PortfolioID = a.PortfolioID 
+                LEFT JOIN Accounts a on p.PortfolioID = a.PortfolioID 
                 LEFT JOIN BankAccounts b on a.AccountID = b.AccountID
                 LEFT JOIN CreditAccounts c on a.AccountID = c.AccountID
-                LEFT JOIN Transactions t on a.AccountID = t.AccountID;
+                LEFT JOIN Transactions t on a.AccountID = t.AccountID
+                ORDER BY p.PortfolioID, 
+                a.AccountID,
+                t.TRANSACTIONID;
                 """;
 
             using var reader = retrieve.ExecuteReader();
+
+            Dictionary<int, Portfolio> portfolios = new();
+            Dictionary<int, Account> accounts = new();
             List<Portfolio> result = new List<Portfolio>();
             while (reader.Read())
             {
-                Portfolio p = new Portfolio(
-                    reader.GetInt32(0), 
-                    reader.GetString(1)
-                );
+                int portfolioID = reader.GetInt32(0);
+
+                if (!portfolios.ContainsKey(portfolioID))
+                {
+                    Portfolio p = new Portfolio(
+                        portfolioID,
+                        reader.GetString(1)
+                        );
+
+                    portfolios.Add(portfolioID, p);
+
+                }
+
+                Portfolio currentPortfolio = portfolios[portfolioID];
 
                 int accountid = reader.GetInt32(2);
-                string acc_type = reader.GetString(3);
-                string acc_name = reader.GetString(4);
-                
+
+                if (accountid != -1)
+                {
+                    if (!accounts.ContainsKey(accountid))
+                    {
+                        string acc_type = reader.GetString(3);
+                        string acc_name = reader.GetString(4);
+                    }
+                }
+                                              
                 if(acc_type == "BANK")
                 {
                     BankAccount b = new BankAccount(
@@ -276,14 +305,14 @@ namespace FinanceTrackerV2._1.DataAccess
 
             retrieve.CommandText = """
                 SELECT AccountID, PortfolioID, Type, AccountName
-                FROM Accounts
+                FROM Accounts 
                 Where PortfolioID = $pid;
 
-                """;
+                """; 
 
             retrieve.Parameters.AddWithValue("$pid", portfolioID);
 
-            using var reader = retrieve.ExecuteReader();
+            using var reader = retrieve.ExecuteReader(); 
             List<Account> result = new List<Account>();
 
             while (reader.Read())

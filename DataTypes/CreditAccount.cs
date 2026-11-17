@@ -32,9 +32,11 @@ namespace FinanceTrackerV2._1.DataTypes
             return balance;
         }
 
-        public CreditAccount (int portfolioID, double creditLimit)
+        public CreditAccount (int accountID,int portfolioID, string name, double creditLimit)
         {
+            AccountID = accountID;
             PortfolioID = portfolioID;
+            Name = name;
             CreditLimit = creditLimit;
         }
 
