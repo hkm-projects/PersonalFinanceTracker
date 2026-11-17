@@ -12,7 +12,7 @@ namespace FinanceTrackerV2._1.DataTypes
         public int PortfolioID;
 
 
-        List<Account> Accounts;
+        public List<Account> Accounts;
 
         public Portfolio(int portfolioid, string name)
         {
