@@ -210,17 +210,14 @@ namespace FinanceTrackerV2._1.DataAccess
             var retrieve = DBConnection.CreateCommand();
             retrieve.CommandText = """
                 SELECT 
-                p.PortfolioID,p.Name,
-                IFNULL (a.AccountID, -1),
-                IFNULL( a.Type, ''),
-                IFNULL(a.AccountName,''),
-                IFNULL(b.InterestRate, 0),
-                IFNULL(b.Balance,0 ),
-                IFNULL(c.CreditLimit,0),
-                IFNULL(t.TransactionID,-1),
-                IFNULL(t.Amount, 0),
-                IFNULL(t.Name,''),
-                IFNULL(t.Category,'')
+                IFNULL(p.PortfolioID,-1) as ValidPortfolio,
+                IFNULL(a.AccountID,-1) as ValidAccount,
+                IFNULL(t.TransactionID,-1) as ValidTransaction,
+                p.PortfolioID,p.Name as PortfolioName,
+                a.AccountID, a.Type, a.AccountName, 
+                b.InterestRate,b.Balance,
+                c.CreditLimit,
+                t.TransactionID,t.Amount,t.name as TransactionName,t.Category
                 FROM Portfolios p 
                 LEFT JOIN Accounts a on p.PortfolioID = a.PortfolioID 
                 LEFT JOIN BankAccounts b on a.AccountID = b.AccountID
@@ -231,68 +228,128 @@ namespace FinanceTrackerV2._1.DataAccess
                 t.TRANSACTIONID;
                 """;
 
+
+            List<Portfolio> result = new List<Portfolio>();
             using var reader = retrieve.ExecuteReader();
 
-            Dictionary<int, Portfolio> portfolios = new();
-            Dictionary<int, Account> accounts = new();
-            List<Portfolio> result = new List<Portfolio>();
+
+
             while (reader.Read())
             {
-                int portfolioID = reader.GetInt32(0);
+                Portfolio currentPortfolio = null;
+                Account currentAccount = null;
+                bool found = false;
 
-                if (!portfolios.ContainsKey(portfolioID))
+                int validP = Convert.ToInt32(reader["ValidPortfolio"]);
+
+                if(validP == -1)
                 {
-                    Portfolio p = new Portfolio(
-                        portfolioID,
-                        reader.GetString(1)
-                        );
-
-                    portfolios.Add(portfolioID, p);
-
+                    continue;
                 }
 
-                Portfolio currentPortfolio = portfolios[portfolioID];
 
-                int accountid = reader.GetInt32(2);
 
-                if (accountid != -1)
+                int portfolioID = Convert.ToInt32( reader["PortfolioID"]);
+
+                foreach (Portfolio p in result)
                 {
-                    if (!accounts.ContainsKey(accountid))
+                    if (p.PortfolioID == portfolioID)
                     {
-                        string acc_type = reader.GetString(3);
-                        string acc_name = reader.GetString(4);
-                    }
-                }
-                                              
-                if(acc_type == "BANK")
-                {
-                    BankAccount b = new BankAccount(
-                        accountid,
-                        p.PortfolioID,
-                        acc_name,
-                        reader.GetDouble(5),
-                        reader.GetDouble(6)
-                        );
-                }    
-
-
-                foreach (Portfolio p1 in result)
-                {
-                    if (p1.PortfolioID == p.PortfolioID)
-                    {
-                        break;
+                        found = true;
+                        currentPortfolio = p;
                     }
 
-                    result.Add(p);
                 }
 
+                if (!found)
+                {
+                    string p_name = (string)reader["PortfolioName"];
+                    currentPortfolio = new Portfolio(portfolioID, p_name);
+                    result.Add(currentPortfolio);
+                }
 
-                
+                found = false;
+
+                int validA = Convert.ToInt32(reader["ValidAccount"]);
+
+                if(validA == -1)
+                {
+                    continue;
+                }
+
+                int accountID = Convert.ToInt32(reader["AccountID"]);
+
+                foreach (Account a in currentPortfolio.Accounts)
+                {
+                    if (a.AccountID == accountID)
+                    {
+                        found = true;
+                        currentAccount = a;
+
+                    }
+                }
+
+                if (!found)
+                {
+                    string type = (string)reader["Type"];
+                    string acc_name = (string)reader["AccountName"];
+                    if (type == "BANK")
+                    {
+
+                        double interestRate = (double)reader["InterestRate"];
+                        double balance = (double)reader["Balance"];
+                        BankAccount b = new BankAccount(accountID, currentPortfolio.PortfolioID, acc_name, interestRate, balance);
+                        currentPortfolio.Accounts.Add(b);
+                        currentAccount = b;
+                    }
+
+                    else
+                    {
+                        double limit = (double)reader["CreditLimit"];
+                        CreditAccount c = new CreditAccount(accountID, currentPortfolio.PortfolioID, acc_name, limit);
+                        currentPortfolio.Accounts.Add(c);
+                        currentAccount = c;
+                    }
+
+
+                }
+
+                found = false;
+
+                int validT = Convert.ToInt32(reader["ValidTransaction"]);
+                if (validT == -1)
+                {
+                    continue;
+                }
+
+                int transactionID = Convert.ToInt32(reader["TransactionID"]);
+                Transaction currentTransaction = null;
+
+                foreach (Transaction t in currentAccount.Transactions)
+                {
+
+                    if (transactionID == t.TransactionID)
+                    {
+                        currentTransaction = t;
+                        found = true;
+                    }
+
+                }
+
+                if (!found)
+                {
+                    double amount = (double)reader["Amount"];
+                    string t_name = (string)reader["TransactionName"];
+                    string category = (string)reader["Category"];
+                    Transaction t = new Transaction(currentAccount.AccountID, amount, t_name, transactionID, category);
+                    currentAccount.Transactions.Add(t);
+                    currentTransaction = t;
+                }
+
             }
-
             return result;
 
-        } */
+        } 
 
 
         public List<Account> RetrieveAccounts(int portfolioID)
