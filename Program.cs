@@ -28,7 +28,7 @@ namespace FinanceTrackerV2._1
             t2.Amount = 100;
             t2.TransactionID = 2;
 
-            CreditAccount credOne = new CreditAccount(7,0.22);
+            CreditAccount credOne = new CreditAccount(7,11,"creditone",2.34);
             credOne.Name = "MyCreditCard";
             credOne.CreditLimit = 20000;
 
@@ -52,6 +52,7 @@ namespace FinanceTrackerV2._1
             credOne.AddTransaction(t4);
 
             Portfolio myPortfolio = new Portfolio();
+            myPortfolio.Name = "PortfolioOne";
             myPortfolio.AddAccount(bankOne);
             myPortfolio.AddAccount(credOne);
             Console.WriteLine("The total balance of your portfolio is " + myPortfolio.TotalBalance());
@@ -67,17 +68,32 @@ namespace FinanceTrackerV2._1
 
             var result = test.RetrieveGoals();
 
-            Portfolio p1 = new Portfolio(0,"portfolio_one");
+            
             
 
 
-            test.Add(p1);
-            int p_id = test.RetrievePortfolioID(p1.Name);
-            
-            BankAccount bank1 = new BankAccount(0, p_id, "bankone", 5.33, 2000.75);
-            
+            test.Add(myPortfolio);
+            int p_id = test.RetrievePortfolioID(myPortfolio.Name);
+            bankOne.PortfolioID = p_id;
+            credOne.PortfolioID = p_id;
+            test.Add(bankOne);
+            test.Add(credOne);
+            int b_id = test.RetrieveAccountID(bankOne.Name);
+            int c_id = test.RetrieveAccountID(credOne.Name);
+            t1.AccountID = b_id;
+            t2.AccountID = b_id;
+            test.Add(t1);
+            test.Add(t2);
+            t3.AccountID = c_id;
+            t4.AccountID = c_id;
+            test.Add(t3);
+            test.Add(t4);
 
-            test.Add(bank1);
+
+
+
+
+            List<Portfolio> portfolios = test.RetrievePortfolios();
 
 
             // To customize application configuration such as set high DPI settings or default font,
